@@ -18,7 +18,6 @@ const App: React.FC = () => {
   const [isDayConfigOpen, setIsDayConfigOpen] = useState(false);
   const [activeSlotId, setActiveSlotId] = useState<string | null>(null);
   
-  // Estados para o resumo da IA
   const [aiSummary, setAiSummary] = useState<string | null>(null);
   const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
 
@@ -28,35 +27,17 @@ const App: React.FC = () => {
 
   const stringifyError = (err: any): string => {
     if (!err) return "Erro desconhecido";
-    if (typeof err === 'string') return err;
-    const parts = [];
-    if (err.message) parts.push(err.message);
-    if (err.details) parts.push(`Detalhes: ${err.details}`);
-    if (err.hint) parts.push(`Dica: ${err.hint}`);
-    if (err.code) parts.push(`Código: ${err.code}`);
-    if (parts.length > 0) return parts.join(' | ');
-    if (err instanceof Error) return err.message;
-    try {
-      const json = JSON.stringify(err);
-      if (json !== '{}') return json;
-    } catch (e) {}
+    if (err.message) return err.message;
     return String(err);
   };
 
   const loadData = async () => {
     try {
       setLoading(true);
-      setError(null);
       const data = await db.fetchAppointments();
       setAppointments(data);
     } catch (err: any) {
-      const errorMessage = stringifyError(err);
-      const lowMsg = errorMessage.toLowerCase();
-      if (lowMsg.includes('column') || lowMsg.includes('does not exist') || lowMsg.includes('relation')) {
-        setError("DATABASE_SETUP_REQUIRED");
-      } else {
-        setError(errorMessage);
-      }
+      setError(stringifyError(err));
     } finally {
       setLoading(false);
     }
@@ -75,7 +56,6 @@ const App: React.FC = () => {
       setIsSyncing(true);
       await db.saveAppointments(newAppointments);
       setAppointments(newAppointments);
-      setAiSummary(null); // Reseta o resumo ao mudar dados
     } catch (err: any) {
       alert("Erro ao salvar: " + stringifyError(err));
     } finally {
@@ -140,125 +120,101 @@ const App: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-pulse flex flex-col items-center">
-          <div className="w-12 h-12 bg-primary rounded-full mb-4 shadow-lg shadow-primary/50"></div>
-          <p className="text-primary-dark font-black tracking-widest uppercase text-[10px]">Hadry Sorrisos | Carregando...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error === "DATABASE_SETUP_REQUIRED") {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
-        <div className="bg-white p-10 rounded-[3rem] shadow-xl max-w-lg border-2 border-primary/20 text-center">
-          <div className="text-5xl mb-6">⚙️</div>
-          <h2 className="text-2xl font-black text-gray-800 mb-4 uppercase">Banco Não Pronto</h2>
-          <p className="text-gray-500 text-sm mb-6 leading-relaxed">
-            O banco de dados precisa ser reiniciado para aceitar a nova estrutura.
-          </p>
-          <div className="bg-gray-900 p-6 rounded-2xl mb-6 text-left overflow-x-auto border-4 border-gray-800">
-            <code className="text-[11px] text-green-400 font-mono whitespace-pre leading-relaxed">
-{`DROP TABLE IF EXISTS appointments CASCADE;
-CREATE TABLE appointments (
-  id TEXT PRIMARY KEY,
-  date DATE NOT NULL,
-  time TEXT NOT NULL,
-  "patientName" TEXT,
-  "patientPhone" TEXT,
-  treatment TEXT,
-  status TEXT NOT NULL DEFAULT 'disponivel'
-);
-ALTER TABLE appointments DISABLE ROW LEVEL SECURITY;
-GRANT ALL ON TABLE appointments TO anon;
-GRANT ALL ON TABLE appointments TO authenticated;`}
-            </code>
-          </div>
-          <button 
-            onClick={() => window.location.reload()}
-            className="w-full py-4 bg-primary text-gray-800 font-black rounded-2xl transition-all shadow-lg uppercase"
-          >
-            Tentar Novamente
-          </button>
+      <div className="min-h-screen flex items-center justify-center bg-pink-50">
+        <div className="animate-bounce flex flex-col items-center">
+          <div className="w-16 h-16 bg-primary rounded-3xl mb-4 shadow-2xl shadow-primary/50 rotate-12"></div>
+          <p className="text-primary-dark font-black tracking-widest uppercase text-xs">Hadry Sorrisos</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center pb-20 font-sans">
-      <header className="w-full max-w-5xl px-4 py-8 flex justify-between items-center">
-        <div className="flex flex-col leading-[0.8] tracking-tighter italic select-none">
-          <span className="text-4xl font-black text-gray-800">Hadry</span>
-          <span className="text-4xl font-black text-primary-dark">Sorrisos</span>
+    <div className="min-h-screen bg-pink-50/30 flex flex-col items-center pb-24 font-sans selection:bg-primary selection:text-white">
+      <header className="w-full max-w-6xl px-6 py-10 flex justify-between items-center">
+        <div className="flex flex-col leading-[0.7] tracking-tighter italic group cursor-default">
+          <span className="text-5xl font-black text-gray-900 group-hover:text-primary transition-colors">Hadry</span>
+          <span className="text-5xl font-black text-primary">Sorrisos</span>
         </div>
 
         <button 
           onClick={() => setIsDayConfigOpen(true)}
-          className="bg-white border-2 border-primary/20 hover:border-primary text-primary-dark py-2.5 px-6 rounded-2xl text-[10px] font-black uppercase transition-all shadow-sm"
+          className="bg-primary text-white py-3 px-8 rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-primary/40 hover:scale-105 active:scale-95 flex items-center gap-2"
         >
-          ⚙️ Gerenciar Horários
+          <span>⚙️</span> Configurar Dia
         </button>
       </header>
 
       {isSyncing && (
-        <div className="fixed top-4 right-4 bg-white/90 backdrop-blur-md border border-primary/20 px-4 py-2 rounded-full shadow-lg z-50 flex items-center gap-2 animate-bounce">
-          <div className="w-2 h-2 bg-primary rounded-full animate-ping"></div>
-          <span className="text-[9px] font-black text-primary-dark uppercase">Sincronizando...</span>
+        <div className="fixed top-6 right-6 bg-primary text-white px-6 py-3 rounded-2xl shadow-2xl z-50 flex items-center gap-3 animate-pulse">
+          <span className="text-xs font-black uppercase tracking-widest">Sincronizando...</span>
         </div>
       )}
 
-      <main className="w-full max-w-5xl px-4 grid grid-cols-1 lg:grid-cols-12 gap-8">
-        <div className="lg:col-span-4 space-y-6">
-          <Calendar 
-            selectedDate={selectedDate} 
-            onDateSelect={(d) => { setSelectedDate(d); setAiSummary(null); }}
-            appointments={appointments.filter(a => a.status !== AppointmentStatus.DISPONIVEL)}
-          />
+      <main className="w-full max-w-6xl px-6 grid grid-cols-1 lg:grid-cols-12 gap-10">
+        <div className="lg:col-span-4 space-y-8">
+          <div className="shadow-2xl shadow-primary/10 rounded-[2.5rem] overflow-hidden">
+             <Calendar 
+               selectedDate={selectedDate} 
+               onDateSelect={(d) => { setSelectedDate(d); setAiSummary(null); }}
+               appointments={appointments.filter(a => a.status !== AppointmentStatus.DISPONIVEL)}
+             />
+          </div>
           
-          {/* Card de IA */}
-          <div className="bg-gradient-to-br from-white to-pink-50/30 p-6 rounded-[2.5rem] border border-primary/20 shadow-sm overflow-hidden relative group">
+          <div className="bg-white p-8 rounded-[3rem] border-2 border-primary/20 shadow-xl relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700"></div>
             <div className="relative z-10">
-              <h4 className="text-[10px] font-black text-primary-dark uppercase tracking-[0.2em] mb-3">Resumo Inteligente</h4>
+              <div className="flex items-center gap-3 mb-4">
+                 <span className="text-2xl">🪄</span>
+                 <h4 className="text-xs font-black text-primary-dark uppercase tracking-widest">Resumo Inteligente</h4>
+              </div>
+              
               {aiSummary ? (
-                <div className="space-y-3">
-                  <p className="text-xs text-gray-600 leading-relaxed italic">{aiSummary}</p>
+                <div className="space-y-4">
+                  <div className="p-5 bg-pink-50 rounded-[2rem] border border-primary/10">
+                    <p className="text-sm text-gray-700 leading-relaxed font-medium italic">{aiSummary}</p>
+                  </div>
                   <button 
                     onClick={handleGenerateAISummary}
                     disabled={isGeneratingSummary}
-                    className="text-[9px] font-black text-primary-dark uppercase hover:underline"
+                    className="w-full py-3 text-[10px] font-black text-primary uppercase rounded-xl hover:bg-primary/5 transition-all"
                   >
-                    {isGeneratingSummary ? 'Atualizando...' : '↻ Atualizar Resumo'}
+                    {isGeneratingSummary ? 'Atualizando...' : '↻ Refazer Análise'}
                   </button>
                 </div>
               ) : (
                 <button 
                   onClick={handleGenerateAISummary}
                   disabled={isGeneratingSummary || filteredAppointments.filter(a => a.status !== 'disponivel').length === 0}
-                  className="w-full py-4 bg-primary/20 hover:bg-primary text-primary-dark hover:text-white rounded-2xl text-[10px] font-black uppercase transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                  className="w-full py-6 bg-gradient-to-br from-primary to-primary-dark text-white rounded-3xl text-xs font-black uppercase tracking-[0.2em] transition-all disabled:opacity-30 shadow-xl shadow-primary/30 hover:scale-[1.02]"
                 >
-                  {isGeneratingSummary ? 'Gerando...' : '✦ Analisar Agenda do Dia'}
+                  {isGeneratingSummary ? 'Processando...' : '✦ Gerar Insights'}
                 </button>
               )}
             </div>
-            <div className="absolute -right-4 -bottom-4 text-7xl opacity-[0.03] select-none pointer-events-none">✨</div>
           </div>
         </div>
 
         <div className="lg:col-span-8">
-          <div className="mb-8 flex justify-between items-end">
+          <div className="mb-10 flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 border-b-2 border-primary/10 pb-8">
             <div>
-              <h3 className="text-3xl font-black text-gray-800 tracking-tighter">
+              <h3 className="text-5xl font-black text-gray-900 tracking-tighter">
                 {new Date(selectedDate + 'T12:00:00').toLocaleDateString('pt-BR', { day: 'numeric', month: 'long' })}
               </h3>
-              <p className="text-sm text-primary-dark font-bold uppercase tracking-wider">
+              <p className="text-lg text-primary font-black uppercase tracking-[0.2em]">
                 {new Date(selectedDate + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'long' })}
               </p>
             </div>
+            <div className="bg-white px-6 py-3 rounded-2xl shadow-sm border border-primary/20 flex items-center gap-3">
+              <span className="flex h-3 w-3 relative">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
+              </span>
+              <span className="text-xs font-black text-gray-600 uppercase tracking-widest">{filteredAppointments.length} Horários Hoje</span>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {filteredAppointments.map(app => (
               <AppointmentCard 
                 key={app.id}
@@ -270,14 +226,16 @@ GRANT ALL ON TABLE appointments TO authenticated;`}
           </div>
 
           {filteredAppointments.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-24 bg-white rounded-[40px] border-2 border-dashed border-gray-100 shadow-inner">
-              <div className="text-4xl mb-4 opacity-20">📅</div>
-              <p className="text-gray-300 font-black uppercase tracking-widest text-xs mb-6 text-center px-4">Sem horários para este dia</p>
+            <div className="flex flex-col items-center justify-center py-40 bg-white/50 rounded-[4rem] border-4 border-dashed border-primary/20">
+              <div className="text-8xl mb-8 grayscale opacity-20">📅</div>
+              <p className="text-primary-dark/60 font-black uppercase tracking-widest text-sm mb-10 text-center">
+                Nada agendado para este dia.<br/>Vamos organizar sua jornada?
+              </p>
               <button 
                 onClick={() => setIsDayConfigOpen(true)}
-                className="bg-primary/10 hover:bg-primary text-primary-dark hover:text-white py-4 px-10 rounded-2xl text-xs font-black transition-all"
+                className="bg-primary text-white py-5 px-14 rounded-3xl text-xs font-black tracking-widest transition-all shadow-2xl shadow-primary/30 hover:bg-primary-dark hover:scale-110 active:scale-95"
               >
-                CONFIGURAR AGENDA
+                CRIAR GRADE DE HORÁRIOS
               </button>
             </div>
           )}
@@ -297,8 +255,8 @@ GRANT ALL ON TABLE appointments TO authenticated;`}
         onGenerate={generateDaySlots}
       />
 
-      <footer className="fixed bottom-0 w-full bg-white/60 backdrop-blur-xl border-t border-gray-100 py-4 px-6 flex justify-center text-[9px] text-gray-300 font-black uppercase tracking-[0.2em] z-40 select-none">
-        Hadry Sorrisos | Gestão Dental Crua & Honesta
+      <footer className="fixed bottom-0 w-full bg-white/90 backdrop-blur-xl border-t border-primary/20 py-6 px-8 flex justify-center text-[11px] text-primary-dark font-black uppercase tracking-[0.5em] z-40">
+        Hadry Sorrisos © 2025
       </footer>
     </div>
   );
