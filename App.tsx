@@ -143,7 +143,7 @@ const App: React.FC = () => {
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="animate-pulse flex flex-col items-center">
           <div className="w-12 h-12 bg-primary rounded-full mb-4 shadow-lg shadow-primary/50"></div>
-          <p className="text-primary-dark font-black tracking-widest uppercase text-[10px]">odontoFácil | Carregando...</p>
+          <p className="text-primary-dark font-black tracking-widest uppercase text-[10px]">Hadry Sorrisos | Carregando...</p>
         </div>
       </div>
     );
@@ -190,8 +190,8 @@ GRANT ALL ON TABLE appointments TO authenticated;`}
     <div className="min-h-screen bg-gray-50 flex flex-col items-center pb-20 font-sans">
       <header className="w-full max-w-5xl px-4 py-8 flex justify-between items-center">
         <div className="flex flex-col leading-[0.8] tracking-tighter italic select-none">
-          <span className="text-4xl font-black text-gray-800">odonto</span>
-          <span className="text-4xl font-black text-primary-dark">Fácil</span>
+          <span className="text-4xl font-black text-gray-800">Hadry</span>
+          <span className="text-4xl font-black text-primary-dark">Sorrisos</span>
         </div>
 
         <button 
@@ -298,7 +298,7 @@ GRANT ALL ON TABLE appointments TO authenticated;`}
       />
 
       <footer className="fixed bottom-0 w-full bg-white/60 backdrop-blur-xl border-t border-gray-100 py-4 px-6 flex justify-center text-[9px] text-gray-300 font-black uppercase tracking-[0.2em] z-40 select-none">
-        odontoFácil | Gestão Dental Crua & Honesta
+        Hadry Sorrisos | Gestão Dental Crua & Honesta
       </footer>
     </div>
   );
