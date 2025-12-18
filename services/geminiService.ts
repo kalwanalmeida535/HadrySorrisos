@@ -2,10 +2,9 @@
 import { GoogleGenAI } from "@google/genai";
 import { Appointment } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || "" });
-
 export const getAgendaSummary = async (appointments: Appointment[]) => {
   try {
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const formattedAgenda = appointments
       .filter(a => a.status !== 'disponivel')
       .map(a => `${a.time} - ${a.patientName} (Tratamento: ${a.treatment || 'Não informado'}) [Status: ${a.status}]`)
@@ -34,6 +33,7 @@ export const getAgendaSummary = async (appointments: Appointment[]) => {
 
 export const getPatientTip = async (patientName: string) => {
   try {
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: `Gere uma mensagem curta para o dentista enviar via WhatsApp para o paciente ${patientName} confirmando o agendamento. Seja formal mas amigável.`,
