@@ -11,8 +11,8 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: '#F472B6', // Rosa mais evidente (Pink 400)
-                        'primary-dark': '#DB2777', // Rosa escuro para contraste (Pink 600)
+                        primary: '#FF4DA6', // Rosa mais vibrante e evidente
+                        'primary-dark': '#D1106A',
                         'status-scheduled': '#FACC15',
                         'status-confirmed': '#4ADE80',
                         'status-cancelled': '#F87171',
@@ -24,9 +24,9 @@
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; margin: 0; padding: 0; background-color: #fdf2f8; }
+        body { font-family: 'Inter', sans-serif; margin: 0; padding: 0; background-color: #FFF5F9; }
         #root { min-height: 100vh; }
-        .glass-card { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); }
+        .pink-glow { box-shadow: 0 0 25px rgba(255, 77, 166, 0.2); }
     </style>
     <script type="importmap">
 {
@@ -44,5 +44,6 @@
 </head>
 <body>
     <div id="root"></div>
-    <script type="module" src="index.js"></script></body>
+    <script type="module" src="./index.tsx"></script>
+</body>
 </html>
