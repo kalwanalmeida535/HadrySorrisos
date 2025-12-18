@@ -14,27 +14,20 @@ export const db = {
       .select('*')
       .order('time', { ascending: true });
 
-    if (error) {
-      console.error('Erro ao buscar agendamentos:', error);
-      return [];
-    }
+    if (error) throw error;
     return data || [];
   },
 
   async saveAppointments(appointments: Appointment[]): Promise<void> {
-    // Utiliza upsert para sincronizar a lista inteira baseada no ID
     const { error } = await supabase
       .from('appointments')
       .upsert(appointments, { onConflict: 'id' });
 
-    if (error) {
-      console.error('Erro ao salvar agendamentos:', error);
-      throw error;
-    }
+    if (error) throw error;
   },
 
   async addSlot(date: string, time: string): Promise<Appointment> {
-    const newSlot: Appointment = {
+    const newSlot = {
       id: Math.random().toString(36).substr(2, 9),
       date,
       time,
@@ -47,39 +40,7 @@ export const db = {
       .select()
       .single();
 
-    if (error) {
-      console.error('Erro ao adicionar horário:', error);
-      throw error;
-    }
+    if (error) throw error;
     return data;
-  },
-
-  async updateStatus(id: string, status: AppointmentStatus): Promise<void> {
-    const { error } = await supabase
-      .from('appointments')
-      .update({ status })
-      .eq('id', id);
-
-    if (error) {
-      console.error('Erro ao atualizar status:', error);
-      throw error;
-    }
-  },
-
-  async bookSlot(id: string, name: string, phone: string, treatment?: string): Promise<void> {
-    const { error } = await supabase
-      .from('appointments')
-      .update({ 
-        status: AppointmentStatus.AGENDADO, 
-        patientName: name, 
-        patientPhone: phone, 
-        treatment 
-      })
-      .eq('id', id);
-
-    if (error) {
-      console.error('Erro ao realizar agendamento:', error);
-      throw error;
-    }
   }
 };
