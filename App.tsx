@@ -5,13 +5,10 @@ import AppointmentCard from './components/AppointmentCard';
 import Calendar from './components/Calendar';
 import BookingModal from './components/BookingModal';
 import DayConfigModal from './components/DayConfigModal';
-import { getAgendaSummary } from './services/geminiService';
 
 const App: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [summary, setSummary] = useState<string>('');
-  const [loadingSummary, setLoadingSummary] = useState(false);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [isDayConfigOpen, setIsDayConfigOpen] = useState(false);
   const [activeSlotId, setActiveSlotId] = useState<string | null>(null);
@@ -91,13 +88,6 @@ const App: React.FC = () => {
     setIsDayConfigOpen(false);
   };
 
-  const fetchAISummary = async () => {
-    setLoadingSummary(true);
-    const text = await getAgendaSummary(filteredAppointments);
-    setSummary(text);
-    setLoadingSummary(false);
-  };
-
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center">
       <header className="w-full max-w-5xl px-4 py-8 flex flex-col sm:flex-row justify-between items-center gap-6">
@@ -122,25 +112,6 @@ const App: React.FC = () => {
             onDateSelect={setSelectedDate}
             appointments={appointments.filter(a => a.status !== AppointmentStatus.DISPONIVEL)}
           />
-
-          <div className="p-6 bg-white rounded-3xl shadow-sm border border-pink-50 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-primary/10 rounded-full -mr-12 -mt-12"></div>
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-sm font-bold text-gray-800 flex items-center gap-2 uppercase tracking-tight relative z-10">
-                <span className="text-primary text-xl">🤖</span> Assistente IA
-              </h2>
-              <button 
-                onClick={fetchAISummary}
-                disabled={loadingSummary}
-                className="text-[10px] bg-primary/20 hover:bg-primary/40 text-primary-dark font-black py-1 px-3 rounded-full transition-colors relative z-10"
-              >
-                {loadingSummary ? 'GERANDO...' : 'RESUMIR DIA'}
-              </button>
-            </div>
-            <div className="text-gray-500 text-xs italic leading-relaxed relative z-10 whitespace-pre-wrap">
-              {summary || "Analisando sua agenda..."}
-            </div>
-          </div>
         </div>
 
         <div className="lg:col-span-8">
