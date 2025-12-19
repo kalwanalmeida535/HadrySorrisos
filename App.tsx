@@ -7,6 +7,9 @@ import BookingModal from './components/BookingModal.tsx';
 import DayConfigModal from './components/DayConfigModal.tsx';
 import { db } from './services/db.ts';
 import { getAgendaSummary } from './services/geminiService.ts';
+import App from './App.tsx'
+
+
 
 const App: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
