@@ -1,6 +1,6 @@
 
 import { createClient } from '@supabase/supabase-js';
-import { Appointment, AppointmentStatus } from "../types";
+import { Appointment, AppointmentStatus } from "../types.ts";
 
 const SUPABASE_URL = 'https://vyacududrdslcrdusqbl.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ5YWN1ZHVkcmRzbGNyZHVzcWJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYwMjM5NDgsImV4cCI6MjA4MTU5OTk0OH0.DVyIFP6YTy8zYs1NI9Z7eW3IO6gwu7fKR6w8HB_KP8s';

@@ -1,6 +1,6 @@
 
 import { GoogleGenAI } from "@google/genai";
-import { Appointment } from "../types";
+import { Appointment } from "../types.ts";
 
 export const getAgendaSummary = async (appointments: Appointment[]) => {
   try {

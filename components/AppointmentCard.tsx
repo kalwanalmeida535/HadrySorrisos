@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Appointment, AppointmentStatus } from '../types';
+import { Appointment, AppointmentStatus } from '../types.ts';
 
 interface AppointmentCardProps {
   appointment: Appointment;

@@ -11,7 +11,7 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: '#FF4DA6', // Rosa mais vibrante e evidente
+                        primary: '#FF4DA6',
                         'primary-dark': '#D1106A',
                         'status-scheduled': '#FACC15',
                         'status-confirmed': '#4ADE80',
@@ -22,12 +22,15 @@
             }
         }
     </script>
+    
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; margin: 0; padding: 0; background-color: #FFF5F9; }
         #root { min-height: 100vh; }
-        .pink-glow { box-shadow: 0 0 25px rgba(255, 77, 166, 0.2); }
     </style>
+
     <script type="importmap">
 {
   "imports": {
@@ -44,6 +47,8 @@
 </head>
 <body>
     <div id="root"></div>
-    <script type="module" src="./index.tsx"></script>
+    <!-- No GitHub Pages, precisamos garantir que o Babel processe o arquivo. 
+         Usar ./index.tsx funciona se o Babel estiver configurado para interceptar. -->
+    <script type="text/babel" data-type="module" data-presets="typescript,react" src="index.tsx"></script>
 </body>
 </html>

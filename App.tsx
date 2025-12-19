@@ -1,12 +1,12 @@
 
 import React, { useState, useEffect } from 'react';
-import { Appointment, AppointmentStatus } from './types';
-import AppointmentCard from './components/AppointmentCard';
-import Calendar from './components/Calendar';
-import BookingModal from './components/BookingModal';
-import DayConfigModal from './components/DayConfigModal';
-import { db } from './services/db';
-import { getAgendaSummary } from './services/geminiService';
+import { Appointment, AppointmentStatus } from './types.ts';
+import AppointmentCard from './components/AppointmentCard.tsx';
+import Calendar from './components/Calendar.tsx';
+import BookingModal from './components/BookingModal.tsx';
+import DayConfigModal from './components/DayConfigModal.tsx';
+import { db } from './services/db.ts';
+import { getAgendaSummary } from './services/geminiService.ts';
 
 const App: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
