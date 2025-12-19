@@ -1,43 +1,38 @@
 
 import React, { useState, useEffect } from 'react';
-import { Appointment, AppointmentStatus } from './types.ts';
-import AppointmentCard from './components/AppointmentCard.tsx';
-import Calendar from './components/Calendar.tsx';
-import BookingModal from './components/BookingModal.tsx';
-import DayConfigModal from './components/DayConfigModal.tsx';
-import { db } from './services/db.ts';
-import { getAgendaSummary } from './services/geminiService.ts';
+import htm from 'htm';
+import { AppointmentStatus } from './types.js';
+import AppointmentCard from './components/AppointmentCard.js';
+import Calendar from './components/Calendar.js';
+import BookingModal from './components/BookingModal.js';
+import DayConfigModal from './components/DayConfigModal.js';
+import { db } from './services/db.js';
+import { getAgendaSummary } from './services/geminiService.js';
 
-const App: React.FC = () => {
-  const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
+const html = htm.bind(React.createElement);
+
+const App = () => {
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [isDayConfigOpen, setIsDayConfigOpen] = useState(false);
-  const [activeSlotId, setActiveSlotId] = useState<string | null>(null);
-  
-  const [aiSummary, setAiSummary] = useState<string | null>(null);
+  const [activeSlotId, setActiveSlotId] = useState(null);
+  const [aiSummary, setAiSummary] = useState(null);
   const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
 
   useEffect(() => {
     loadData();
   }, []);
 
-  const stringifyError = (err: any): string => {
-    if (!err) return "Erro desconhecido";
-    if (err.message) return err.message;
-    return String(err);
-  };
-
   const loadData = async () => {
     try {
       setLoading(true);
       const data = await db.fetchAppointments();
       setAppointments(data);
-    } catch (err: any) {
-      setError(stringifyError(err));
+    } catch (err) {
+      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -51,13 +46,13 @@ const App: React.FC = () => {
     setIsGeneratingSummary(false);
   };
 
-  const sync = async (newAppointments: Appointment[]) => {
+  const sync = async (newAppointments) => {
     try {
       setIsSyncing(true);
       await db.saveAppointments(newAppointments);
       setAppointments(newAppointments);
-    } catch (err: any) {
-      alert("Erro ao salvar: " + stringifyError(err));
+    } catch (err) {
+      alert("Erro ao salvar: " + err.message);
     } finally {
       setIsSyncing(false);
     }
@@ -67,7 +62,7 @@ const App: React.FC = () => {
     .filter(app => app.date === selectedDate)
     .sort((a, b) => a.time.localeCompare(b.time));
 
-  const updateStatus = async (id: string, newStatus: AppointmentStatus) => {
+  const updateStatus = async (id, newStatus) => {
     const updated = appointments.map(app => 
       app.id === id ? { 
         ...app, 
@@ -78,12 +73,12 @@ const App: React.FC = () => {
     await sync(updated);
   };
 
-  const handleOpenBooking = (id: string) => {
+  const handleOpenBooking = (id) => {
     setActiveSlotId(id);
     setIsBookingModalOpen(true);
   };
 
-  const handleConfirmBooking = async (name: string, phone: string, treatment: string) => {
+  const handleConfirmBooking = async (name, phone, treatment) => {
     if (activeSlotId) {
       const updated = appointments.map(app => 
         app.id === activeSlotId ? { 
@@ -100,8 +95,8 @@ const App: React.FC = () => {
     }
   };
 
-  const generateDaySlots = async (start: number, end: number) => {
-    const newSlots: Appointment[] = [];
+  const generateDaySlots = async (start, end) => {
+    const newSlots = [];
     for (let h = start; h < end; h++) {
       const timeStr = `${String(h).padStart(2, '0')}:00`;
       const exists = appointments.find(a => a.date === selectedDate && a.time === timeStr);
@@ -119,17 +114,17 @@ const App: React.FC = () => {
   };
 
   if (loading) {
-    return (
+    return html`
       <div className="min-h-screen flex items-center justify-center bg-pink-50">
         <div className="animate-bounce flex flex-col items-center">
           <div className="w-16 h-16 bg-primary rounded-3xl mb-4 shadow-2xl shadow-primary/50 rotate-12"></div>
           <p className="text-primary-dark font-black tracking-widest uppercase text-xs">Hadry Sorrisos</p>
         </div>
       </div>
-    );
+    `;
   }
 
-  return (
+  return html`
     <div className="min-h-screen bg-pink-50/30 flex flex-col items-center pb-24 font-sans selection:bg-primary selection:text-white">
       <header className="w-full max-w-6xl px-6 py-10 flex justify-between items-center">
         <div className="flex flex-col leading-[0.7] tracking-tighter italic group cursor-default">
@@ -138,26 +133,26 @@ const App: React.FC = () => {
         </div>
 
         <button 
-          onClick={() => setIsDayConfigOpen(true)}
+          onClick=${() => setIsDayConfigOpen(true)}
           className="bg-primary text-white py-3 px-8 rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-primary/40 hover:scale-105 active:scale-95 flex items-center gap-2"
         >
           <span>⚙️</span> Configurar Dia
         </button>
       </header>
 
-      {isSyncing && (
+      ${isSyncing && html`
         <div className="fixed top-6 right-6 bg-primary text-white px-6 py-3 rounded-2xl shadow-2xl z-50 flex items-center gap-3 animate-pulse">
           <span className="text-xs font-black uppercase tracking-widest">Sincronizando...</span>
         </div>
-      )}
+      `}
 
       <main className="w-full max-w-6xl px-6 grid grid-cols-1 lg:grid-cols-12 gap-10">
         <div className="lg:col-span-4 space-y-8">
           <div className="shadow-2xl shadow-primary/10 rounded-[2.5rem] overflow-hidden">
-             <Calendar 
-               selectedDate={selectedDate} 
-               onDateSelect={(d) => { setSelectedDate(d); setAiSummary(null); }}
-               appointments={appointments.filter(a => a.status !== AppointmentStatus.DISPONIVEL)}
+             <${Calendar} 
+               selectedDate=${selectedDate} 
+               onDateSelect=${(d) => { setSelectedDate(d); setAiSummary(null); }}
+               appointments=${appointments.filter(a => a.status !== AppointmentStatus.DISPONIVEL)}
              />
           </div>
           
@@ -169,28 +164,28 @@ const App: React.FC = () => {
                  <h4 className="text-xs font-black text-primary-dark uppercase tracking-widest">Resumo Inteligente</h4>
               </div>
               
-              {aiSummary ? (
+              ${aiSummary ? html`
                 <div className="space-y-4">
                   <div className="p-5 bg-pink-50 rounded-[2rem] border border-primary/10">
-                    <p className="text-sm text-gray-700 leading-relaxed font-medium italic">{aiSummary}</p>
+                    <p className="text-sm text-gray-700 leading-relaxed font-medium italic">${aiSummary}</p>
                   </div>
                   <button 
-                    onClick={handleGenerateAISummary}
-                    disabled={isGeneratingSummary}
+                    onClick=${handleGenerateAISummary}
+                    disabled=${isGeneratingSummary}
                     className="w-full py-3 text-[10px] font-black text-primary uppercase rounded-xl hover:bg-primary/5 transition-all"
                   >
-                    {isGeneratingSummary ? 'Atualizando...' : '↻ Refazer Análise'}
+                    ${isGeneratingSummary ? 'Atualizando...' : '↻ Refazer Análise'}
                   </button>
                 </div>
-              ) : (
+              ` : html`
                 <button 
-                  onClick={handleGenerateAISummary}
-                  disabled={isGeneratingSummary || filteredAppointments.filter(a => a.status !== 'disponivel').length === 0}
+                  onClick=${handleGenerateAISummary}
+                  disabled=${isGeneratingSummary || filteredAppointments.filter(a => a.status !== 'disponivel').length === 0}
                   className="w-full py-6 bg-gradient-to-br from-primary to-primary-dark text-white rounded-3xl text-xs font-black uppercase tracking-[0.2em] transition-all disabled:opacity-30 shadow-xl shadow-primary/30 hover:scale-[1.02]"
                 >
-                  {isGeneratingSummary ? 'Processando...' : '✦ Gerar Insights'}
+                  ${isGeneratingSummary ? 'Processando...' : '✦ Gerar Insights'}
                 </button>
-              )}
+              `}
             </div>
           </div>
         </div>
@@ -199,10 +194,10 @@ const App: React.FC = () => {
           <div className="mb-10 flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 border-b-2 border-primary/10 pb-8">
             <div>
               <h3 className="text-5xl font-black text-gray-900 tracking-tighter">
-                {new Date(selectedDate + 'T12:00:00').toLocaleDateString('pt-BR', { day: 'numeric', month: 'long' })}
+                ${new Date(selectedDate + 'T12:00:00').toLocaleDateString('pt-BR', { day: 'numeric', month: 'long' })}
               </h3>
               <p className="text-lg text-primary font-black uppercase tracking-[0.2em]">
-                {new Date(selectedDate + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'long' })}
+                ${new Date(selectedDate + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'long' })}
               </p>
             </div>
             <div className="bg-white px-6 py-3 rounded-2xl shadow-sm border border-primary/20 flex items-center gap-3">
@@ -210,56 +205,56 @@ const App: React.FC = () => {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
               </span>
-              <span className="text-xs font-black text-gray-600 uppercase tracking-widest">{filteredAppointments.length} Horários Hoje</span>
+              <span className="text-xs font-black text-gray-600 uppercase tracking-widest">${filteredAppointments.length} Horários Hoje</span>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {filteredAppointments.map(app => (
-              <AppointmentCard 
-                key={app.id}
-                appointment={app}
-                onStatusChange={updateStatus}
-                onBook={handleOpenBooking}
+            ${filteredAppointments.map(app => html`
+              <${AppointmentCard} 
+                key=${app.id}
+                appointment=${app}
+                onStatusChange=${updateStatus}
+                onBook=${handleOpenBooking}
               />
-            ))}
+            `)}
           </div>
 
-          {filteredAppointments.length === 0 && (
+          ${filteredAppointments.length === 0 && html`
             <div className="flex flex-col items-center justify-center py-40 bg-white/50 rounded-[4rem] border-4 border-dashed border-primary/20">
               <div className="text-8xl mb-8 grayscale opacity-20">📅</div>
               <p className="text-primary-dark/60 font-black uppercase tracking-widest text-sm mb-10 text-center">
                 Nada agendado para este dia.<br/>Vamos organizar sua jornada?
               </p>
               <button 
-                onClick={() => setIsDayConfigOpen(true)}
+                onClick=${() => setIsDayConfigOpen(true)}
                 className="bg-primary text-white py-5 px-14 rounded-3xl text-xs font-black tracking-widest transition-all shadow-2xl shadow-primary/30 hover:bg-primary-dark hover:scale-110 active:scale-95"
               >
                 CRIAR GRADE DE HORÁRIOS
               </button>
             </div>
-          )}
+          `}
         </div>
       </main>
 
-      <BookingModal 
-        isOpen={isBookingModalOpen}
-        onClose={() => setIsBookingModalOpen(false)}
-        onConfirm={handleConfirmBooking}
-        time={appointments.find(a => a.id === activeSlotId)?.time || ""}
+      <${BookingModal} 
+        isOpen=${isBookingModalOpen}
+        onClose=${() => setIsBookingModalOpen(false)}
+        onConfirm=${handleConfirmBooking}
+        time=${appointments.find(a => a.id === activeSlotId)?.time || ""}
       />
 
-      <DayConfigModal 
-        isOpen={isDayConfigOpen}
-        onClose={() => setIsDayConfigOpen(false)}
-        onGenerate={generateDaySlots}
+      <${DayConfigModal} 
+        isOpen=${isDayConfigOpen}
+        onClose=${() => setIsDayConfigOpen(false)}
+        onGenerate=${generateDaySlots}
       />
 
       <footer className="fixed bottom-0 w-full bg-white/90 backdrop-blur-xl border-t border-primary/20 py-6 px-8 flex justify-center text-[11px] text-primary-dark font-black uppercase tracking-[0.5em] z-40">
         Hadry Sorrisos © 2025
       </footer>
     </div>
-  );
+  `;
 };
 
 export default App;
